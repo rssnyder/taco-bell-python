@@ -20,7 +20,7 @@ To be able to order my favorite taco bell items (rip potatoes) via code.
 
 Sign into your Taco Bell account with your username (email) and password:
 ```
-from taco-bell import TacoBell
+from tacobell import TacoBell
 tbell = TacoBell('rileysndr@gmail.com', '<super secure password>')
 ```
 
