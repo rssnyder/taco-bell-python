@@ -1,4 +1,4 @@
 # Version of the taco-bell-python package
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
-import tacobell
+from .tacobell import TacoBell
