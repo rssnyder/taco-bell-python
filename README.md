@@ -16,6 +16,8 @@ To be able to order my favorite taco bell items (rip potatoes) via code.
 
 4. Getting your cart total cost
 
+5. Find the nearest stores and set store for pickup
+
 ## Usage
 
 Sign into your Taco Bell account with your username (email) and password:
@@ -57,6 +59,17 @@ Get your cart total:
 tbell.cart_total()
 ```
 
+Find your desired pickup location:
+```
+for store in tbell.find_store('<latitude>', '<longitude>'):
+    print(store)
+```
+
+Set your pickup location:
+```
+tbell.set_pickup('<store id>')
+```
+
 ## Current problems/issues
 
 I am accomplishing this by exporling the network calls made on the Taco Bell site. I will publish the API endpoints I have found and how to use them.
@@ -64,6 +77,7 @@ I am accomplishing this by exporling the network calls made on the Taco Bell sit
 It seems like logging in and doing actions is hit or miss. I am unsure if this is some sort of anti-robot protections taco bell has or they are just blocking my IP every once and a while.
 
 There is no great way to list items, so for now I am building a relationship of item names -> product codes. Hopefull this can be replaced by a search function later.
+
 
 ## Known API Endpoints
 
@@ -73,9 +87,9 @@ There is no great way to list items, so for now I am building a relationship of 
 Data:
 ```
 {
-    'j_username': <username>,
-    'j_password': <password>,
-    'CSRFToken': <CSRF Token>
+    "j_username": <username>,
+    "j_password": <password>,
+    "CSRFToken": <CSRF Token>
 }
 ```
 
@@ -83,11 +97,11 @@ Data:
 Always returns 200 status code
 
 ### Add uncustomized item to cart: POST `/cart/add`
-Data:
+Params:
 ```
 {
-    'productCodePost': <product code>,
-    'CSRFToken': <CSRF Token>
+    "productCodePost": <product code>,
+    "CSRFToken": <CSRF Token>
 }
 ```
 
@@ -103,18 +117,36 @@ Data:
     "qty": <quantity>,
     "includeProduct": [
         {
-            'code': <modifier code>,
-            'group': 'included',
-            'qty': 1
+            "code": <modifier code>,
+            "group": "included",
+            "qty": 1
         }
     ],
     "modifierProduct": [
         {
-            'code': <modifier code>,
-            'group': <modifier type>,
-            'qty': 1
+            "code": <modifier code>,
+            "group": <modifier type>,
+            "qty": 1
         }
     ]
+}
+```
+
+### Find Stores: GET `/store-finder/findStores`
+Params:
+```
+{
+    "latitude": <latitude>,
+    "longitude": <longitude>
+}
+```
+
+### Set Pickup Store: POST `/pickup-location/pickupLocation`
+Params:
+```
+{
+    "storeName": <store id>,
+    "CSRFToken": <CSRF Token>
 }
 ```
 

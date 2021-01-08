@@ -148,19 +148,10 @@ class TacoBell():
             params=params
         )
 
-        # Catch "The page you requested is no longer active"
-        if response.status_code == 403:
-
-            # Retry to avoid lockout
-            if retry:
-                sleep(4)
-                self.add_to_cart(product_name, retry=False)
-                pass
-
-            return False
-        # Deal with information that was returned
-        else:
+        if response.status_code == 200:
             return True
+        else:
+            return False
 
 
     def add_to_cart_customized(self, product_name: str, quantity: int = 1, modify: list = [], sauces: list = [], addons: list = []) -> bool:
@@ -235,15 +226,13 @@ class TacoBell():
             json=order
         )
 
-        # Catch "The page you requested is no longer active"
-        if response.status_code == 403:
-            return False
-        # Print information on what was added to the cart
-        else:
+        if response.status_code == 200:
             return True
+        else:
+            return False
 
 
-    def get_customizations(self, product_code: str, store_id: int = None, retry: bool = True):
+    def get_customizations(self, product_code: str, store_id: int = None, retry: bool = True) -> dict:
         """
         Get all the options for customizing this item
         """
@@ -263,3 +252,57 @@ class TacoBell():
             return json.loads(response.text)
         else:
             return None
+
+    
+    def find_store(self, latitude: str, longitude: str):
+        """
+        Find the nearest stores
+        """
+
+        # Request payload for finding stores
+        location = {
+            'latitude': latitude,
+            'longitude': longitude
+        }
+        
+        # Make GET call to find nearest stores
+        response = self.session.get(
+            TACO_BELL_URL + f'store-finder/findStores',
+            headers=HEADERS,
+            params=location
+        )
+
+        if response.status_code != 200:
+            return None
+        
+        stores_data = json.loads(response.text)
+
+        return_data = []
+        for store in stores_data.get('nearByStores', []):
+            yield (store['formattedDistance'], store['storeNumber'])
+    
+
+    def set_pickup(self, store_id: str) -> str:
+        """
+        Set your order to go to a specific store
+        """
+
+        # Request payload for changing location
+        location = {
+            'storeName': store_id,
+            'CSRFToken': self.csrf
+        }
+
+        # Make POST call to set location of order
+        response = self.session.post(
+            TACO_BELL_URL + '/pickup-location/pickupLocation',
+            headers=HEADERS,
+            params=location
+        )
+
+        if response.status_code == 200:
+            change_data = json.loads(response.text)
+            if change_data['status'] == 'success':
+                return f'{change_data["storeAddress"]} {change_data["storeCity"]} {change_data["storeState"]} {change_data["storePinCode"]}'
+            
+        return False
